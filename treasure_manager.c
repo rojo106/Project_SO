@@ -7,12 +7,17 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <time.h>
+#include <signal.h>
 
 #define MAX_USERNAME 50
 #define MAX_CLUE 100
 #define DATA_FILE "treasures.dat"
 #define LOG_FILE "logged_hunt"
 #define MAX_PATH 256
+#define CMD_FILE "cmd.txt"
+
+volatile sig_atomic_t got_command = 0;
+volatile sig_atomic_t stop_monitor = 0;
 
 typedef struct {
     int treasure_id;
@@ -34,7 +39,6 @@ void log_action(const char *hunt_dir, const char *action) {
     fprintf(f, "[%s] %s\n", ctime(&now), action);
     fclose(f);
 
-    // créer symlink s’il n’existe pas
     char symlink_name[MAX_PATH];
     snprintf(symlink_name, sizeof(symlink_name), "logged_hunt-%s", hunt_dir);
     symlink(path, symlink_name);
@@ -43,8 +47,7 @@ void log_action(const char *hunt_dir, const char *action) {
 void add_treasure(const char *hunt_id) {
     char dir[MAX_PATH];
     snprintf(dir, sizeof(dir), "%s", hunt_id);
-
-    mkdir(dir, 0777); // crée le dossier s’il n’existe pas
+    mkdir(dir, 0777);
 
     char file_path[MAX_PATH];
     snprintf(file_path, sizeof(file_path), "%s/%s", dir, DATA_FILE);
@@ -54,7 +57,8 @@ void add_treasure(const char *hunt_id) {
     printf("Username: "); scanf("%s", t.username);
     printf("Latitude: "); scanf("%lf", &t.latitude);
     printf("Longitude: "); scanf("%lf", &t.longitude);
-    printf("Clue: "); scanf(" %[^\n]", t.clue);
+    printf("Clue: "); scanf(" %[^
+]", t.clue);
     printf("Value: "); scanf("%d", &t.value);
 
     FILE *f = fopen(file_path, "ab");
@@ -145,7 +149,7 @@ void remove_treasure(const char *hunt_id, int target_id) {
     while (fread(&t, sizeof(Treasure), 1, f)) {
         if (t.treasure_id == target_id) {
             found = 1;
-            continue; // skip this one
+            continue;
         }
         fwrite(&t, sizeof(Treasure), 1, temp);
     }
@@ -179,7 +183,91 @@ void remove_hunt(const char *hunt_id) {
     printf("Hunt %s removed.\n", hunt_id);
 }
 
+void sigusr1_handler(int sig) {
+    got_command = 1;
+}
+
+void sigusr2_handler(int sig) {
+    stop_monitor = 1;
+}
+
+void monitor_loop() {
+    signal(SIGUSR1, sigusr1_handler);
+    signal(SIGUSR2, sigusr2_handler);
+
+    printf("[monitor] Monitoring started (PID %d)\n", getpid());
+    while (!stop_monitor) {
+        if (got_command) {
+            got_command = 0;
+
+            FILE *f = fopen(CMD_FILE, "r");
+            if (!f) {
+                perror("monitor: cannot open cmd file");
+                continue;
+            }
+
+            char cmd[256];
+            fgets(cmd, sizeof(cmd), f);
+            fclose(f);
+
+            char *newline = strchr(cmd, '\n');
+            if (newline) *newline = '\0';
+
+            if (strcmp(cmd, "list_hunts") == 0) {
+                printf("[monitor] Listing hunts:\n");
+                DIR *d = opendir(".");
+                struct dirent *entry;
+                while ((entry = readdir(d)) != NULL) {
+                    if (entry->d_type == DT_DIR && strcmp(entry->d_name, ".") != 0 && strcmp(entry->d_name, "..") != 0) {
+                        char path[MAX_PATH];
+                        snprintf(path, sizeof(path), "%s/%s", entry->d_name, DATA_FILE);
+                        if (access(path, F_OK) == 0) {
+                            int count = 0;
+                            FILE *fp = fopen(path, "rb");
+                            Treasure t;
+                            while (fread(&t, sizeof(Treasure), 1, fp)) count++;
+                            fclose(fp);
+                            printf("- %s (%d treasures)\n", entry->d_name, count);
+                        }
+                    }
+                }
+                closedir(d);
+            } else if (strncmp(cmd, "list_treasures", 14) == 0) {
+                char *hunt_id = strchr(cmd, ' ');
+                if (hunt_id) {
+                    hunt_id++;
+                    list_treasures(hunt_id);
+                } else {
+                    printf("Invalid command format.\n");
+                }
+            } else if (strncmp(cmd, "view_treasure", 13) == 0) {
+                char *p = strchr(cmd, ' ');
+                if (p) {
+                    char *hunt_id = strtok(p + 1, " ");
+                    char *id_str = strtok(NULL, " ");
+                    if (hunt_id && id_str) {
+                        view_treasure(hunt_id, atoi(id_str));
+                    } else {
+                        printf("Invalid view_treasure format.\n");
+                    }
+                }
+            } else {
+                printf("[monitor] Unknown command: %s\n", cmd);
+            }
+        }
+        usleep(100000); // 0.1s sleep
+    }
+    printf("[monitor] Stopping monitor...\n");
+    usleep(500000); // simulate delay
+    exit(0);
+}
+
 int main(int argc, char *argv[]) {
+    if (argc >= 2 && strcmp(argv[1], "monitor") == 0) {
+        monitor_loop();
+        return 0;
+    }
+
     if (argc < 3) {
         printf("Usage: ./treasure_manager <operation> <hunt_id> [<id>]\n");
         return 1;
