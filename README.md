@@ -8,7 +8,7 @@ This project is a UNIX system programming assignment that simulates a treasure h
 
 ### Project Structure
 
-.
+
 ├── src/                    # Code source (organisation optionnelle)
 
 │   ├── treasure_manager.c
