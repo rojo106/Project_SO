@@ -9,7 +9,7 @@ This project is a UNIX system programming assignment that simulates a treasure h
 ### Project Structure
 
 
-├── src/                    # Code source (organisation optionnelle)
+├── src/                    
 
 │   ├── treasure_manager.c
 
@@ -19,7 +19,7 @@ This project is a UNIX system programming assignment that simulates a treasure h
 
 │   └── score_calculator.c
 
-├── bin/                    # Binaries compilés (après make)
+├── bin/                    # Binaries compilés
 
 ├── hunts/                  # Répertoires générés pour chaque chasse
 
