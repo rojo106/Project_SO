@@ -10,15 +10,25 @@ This project is a UNIX system programming assignment that simulates a treasure h
 
 .
 ├── src/                    # Code source (organisation optionnelle)
+
 │   ├── treasure_manager.c
+
 │   ├── treasure_hub.c
+
 │   ├── monitor.c
+
 │   └── score_calculator.c
+
 ├── bin/                    # Binaries compilés (après make)
+
 ├── hunts/                  # Répertoires générés pour chaque chasse
+
 ├── Makefile                # Instructions de compilation
+
 ├── monitor_command         # Fichier de commande pour communication par signaux
+
 ├── logged_hunt-<ID>        # Liens symboliques vers fichiers log
+
 
 
 
