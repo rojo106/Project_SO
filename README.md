@@ -40,8 +40,10 @@ Make sure you have `gcc` and `make` installed:
 bash :
 
 make        ||  # Compile everything
-|make run    ||  # Launch treasure_hub
-|make clean  ||  # Clean binaries and temp files
+
+make run    ||  # Launch treasure_hub
+
+make clean  ||  # Clean binaries and temp files
 
 
 How to Use
@@ -62,9 +64,17 @@ treasure_manager commands:
 Inside treasure_hub interactive shell:
 
 start_monitor
+
 list_hunts
+
 list_treasures Hunt001
+
 calculate_score
+
 stop_monitor
+
 exit
+
+
+
 
