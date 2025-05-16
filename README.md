@@ -1,33 +1,64 @@
-# Treasure Hunt System — Phase: Monitor Interaction
+This project is a UNIX system programming assignment that simulates a treasure hunt game system using:
 
-## 📄 Description
+- File handling
+- Process management
+- Signals
+- Inter-process communication (pipes)
+- External program integration
 
-This project implements a signal-based multi-process interaction system for a treasure hunt game. The main controller `treasure_hub` communicates with a background process (monitor mode of `treasure_manager`) using signals and a shared command file.
+### Project Structure
 
-## 🧠 Key Features
+.
+├── src/                    # Code source (organisation optionnelle)
+│   ├── treasure_manager.c
+│   ├── treasure_hub.c
+│   ├── monitor.c
+│   └── score_calculator.c
+├── bin/                    # Binaries compilés (après make)
+├── hunts/                  # Répertoires générés pour chaque chasse
+├── Makefile                # Instructions de compilation
+├── monitor_command         # Fichier de commande pour communication par signaux
+├── logged_hunt-<ID>        # Liens symboliques vers fichiers log
 
-- 🧵 **Process creation** via `fork()` and `exec()`
-- 📡 **Signal communication** between `treasure_hub` and the monitor:
-  - `SIGUSR1`: New command available
-  - `SIGUSR2`: Request monitor termination
-- 📁 **Command file (`cmd.txt`)** used to pass instructions
-- 🪦 **Signal handler for SIGCHLD** to detect monitor termination
-- 💤 Simulated delay on monitor exit (`usleep()`)
 
-## 🧪 Commands (via `treasure_hub`)
 
-| Command                  | Description                                   |
-|--------------------------|-----------------------------------------------|
-| `start_monitor`          | Launches the monitor in the background        |
-| `list_hunts`             | Lists all active hunts and their treasure counts |
-| `list_treasures <hunt>`  | Lists all treasures of a given hunt           |
-| `view_treasure <hunt> <id>` | Displays a specific treasure               |
-| `stop_monitor`           | Terminates the monitor process cleanly        |
-| `exit`                   | Exits `treasure_hub` (only if monitor is stopped) |
+### Features by Phase
 
-## 🚀 How to Build and Run
+- **Phase 1: File System (`treasure_manager`)**  
+  Add, list, view, and remove treasures; create and delete hunts; log all actions.
 
-```bash
-gcc treasure_manager.c -o treasure_manager
-gcc treasure_hub.c -o treasure_hub
-./treasure_hub
+- **Phase 2: Processes and Signals (`treasure_hub`, `monitor`)**  
+  Background monitor process; command signaling; hunt and treasure listings.
+
+- **Phase 3: Pipes and Score Calculation**  
+  Monitor output redirected via pipe; external score calculator program; user scores.
+
+### How to Compile
+
+Make sure you have `gcc` and `make` installed:
+
+```bash```
+make          # Compile everything
+make run      # Launch treasure_hub
+make clean    # Clean binaries and temp files
+
+
+How to Use
+
+treasure_manager commands:
+
+./bin/treasure_manager --add Hunt001
+./bin/treasure_manager --list Hunt001
+./bin/treasure_manager --view Hunt001 1
+./bin/treasure_manager --remove_treasure Hunt001 1
+./bin/treasure_manager --remove Hunt001
+
+Inside treasure_hub interactive shell:
+
+start_monitor
+list_hunts
+list_treasures Hunt001
+calculate_score
+stop_monitor
+exit
+
