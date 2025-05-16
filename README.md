@@ -37,10 +37,11 @@ This project is a UNIX system programming assignment that simulates a treasure h
 
 Make sure you have `gcc` and `make` installed:
 
-bash
-make          # Compile everything
-make run      # Launch treasure_hub
-make clean    # Clean binaries and temp files
+bash :
+
+make        ||  # Compile everything
+|make run    ||  # Launch treasure_hub
+|make clean  ||  # Clean binaries and temp files
 
 
 How to Use
