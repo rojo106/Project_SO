@@ -49,10 +49,15 @@ How to Use
 treasure_manager commands:
 
 ./bin/treasure_manager --add Hunt001
+
 ./bin/treasure_manager --list Hunt001
+
 ./bin/treasure_manager --view Hunt001 1
+
 ./bin/treasure_manager --remove_treasure Hunt001 1
+
 ./bin/treasure_manager --remove Hunt001
+
 
 Inside treasure_hub interactive shell:
 
